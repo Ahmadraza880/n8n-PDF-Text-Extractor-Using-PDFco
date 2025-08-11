@@ -1,0 +1,173 @@
+{
+  "name": "PDF Invoice Parser using PDF.co",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pdf-invoice-upload",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        -520
+      ],
+      "id": "3762c94d-eb79-468b-b34e-391b1c539ebc",
+      "name": "Webhook",
+      "webhookId": "723b0007-a231-4332-865c-c771dfe52665"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdf.co/v1/file/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "ranaahmadraza786n@gmail.com_7aCXB9rY0ytPnrHrvT6RuL4xal4O4EbTq3OoTldutAwjgl1F4dJX6f3ihB4N7YWq"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -220,
+        -400
+      ],
+      "id": "7ca48b6f-9455-47b4-9d3b-7022b7f9e1e4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "let text = $json.body || \"\";\n\n// Remove extra spaces\ntext = text.replace(/\\s+/g, \" \").trim();\n\n// Remove multiple blank lines\ntext = text.replace(/\\n{2,}/g, \"\\n\");\n\n// Short preview if you don't want the full text\nconst preview = text.length > 500\n  ? text.substring(0, 500) + \"...\"\n  : text;\n\nreturn {\n  json: {\n    fullText: text,\n    preview\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -400
+      ],
+      "id": "445434bc-7050-4b89-8e91-28903ec1d214",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdf.co/v1/pdf/convert/to/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "ranaahmadraza786n@gmail.com_7aCXB9rY0ytPnrHrvT6RuL4xal4O4EbTq3OoTldutAwjgl1F4dJX6f3ihB4N7YWq"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{$json.url}}\",\n  \"inline\": true\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        -440
+      ],
+      "id": "7cd80284-e50d-4a78-b6d1-0a70b2078e0a",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"parsedText\": \" {{ $json.preview }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        -520
+      ],
+      "id": "95def834-0326-48f7-9833-2e5f405afede",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9359e103-05c2-4562-8b1b-ac5cdbc5b182",
+  "meta": {
+    "instanceId": "2de80f5914130ddac7b892de4e5de570f30cd22f0b2bd794e45e389d7524d1e9"
+  },
+  "id": "mSsDQla4TlydZ3zK",
+  "tags": []
+}
